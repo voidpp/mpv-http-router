@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+
+from argparse import ArgumentParser
+from gevent import pywsgi
+from geventwebsocket.handler import WebSocketHandler
+
+from mpv_http_router.zeroconf_service import ZeroconfService
+
+parser = ArgumentParser()
+
+parser.add_argument('port', type = int)
+parser.add_argument('--host', default = '0.0.0.0')
+parser.add_argument('-d', '--debug', action = 'store_true', default = False)
+
+args = parser.parse_args()
+
+from mpv_http_router.app import app, logger
+
+if args.debug:
+    app.debug = True
+
+server = pywsgi.WSGIServer((args.host, args.port), app, handler_class = WebSocketHandler)
+
+zs = ZeroconfService()
+
+zs.register(args.port)
+
+try:
+    logger.info("Listening on :%s", args.port)
+    server.serve_forever()
+except KeyboardInterrupt:
+    zs.unregister()
+    logger.info("close")
+

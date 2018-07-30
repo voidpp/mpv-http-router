@@ -1,0 +1,19 @@
+#!/usr/bin/env python
+
+from mpv_http_router.app import app, logger
+from gevent import pywsgi
+from geventwebsocket.handler import WebSocketHandler
+
+# app.run(port = 5000, use_reloader = False)
+
+server = pywsgi.WSGIServer(('0.0.0.0', 5000), app, handler_class = WebSocketHandler)
+
+logger.info("Listening on :%s", 5000)
+
+try:
+    server.serve_forever()
+except KeyboardInterrupt:
+    logger.info("close")
+
+
+# gunicorn -k flask_sockets.worker mpv_http_router.app:app

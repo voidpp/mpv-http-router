@@ -1,0 +1,17 @@
+mpv_socket_pattern: /tmp/mpv/\d+\.sock
+logger:
+  disable_existing_loggers: false
+  formatters:
+    standard:
+      format: '%(asctime)s - %(levelname)s - %(filename)s:%(lineno)s: %(message)s'
+  handlers:
+    console:
+      class: logging.StreamHandler
+      formatter: standard
+      level: DEBUG
+  loggers:
+    mpv_http_router:
+      handlers: [console]
+      level: DEBUG
+      propagate: true
+  version: 1
