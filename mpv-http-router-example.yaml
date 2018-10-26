@@ -1,4 +1,6 @@
-mpv_socket_pattern: /tmp/mpv/\d+\.sock
+port: 21042
+host: '0.0.0.0'
+mpv-socket-pattern: /usr/local/var/mpv/\d+\.sock
 logger:
   disable_existing_loggers: false
   formatters:
