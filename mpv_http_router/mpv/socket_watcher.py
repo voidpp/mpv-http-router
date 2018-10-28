@@ -1,4 +1,3 @@
-
 import hashlib
 import logging
 import os
@@ -10,7 +9,7 @@ from mpv_http_router.directory_watcher import DirectoryWatcher
 from mpv_http_router.message import Message
 
 from .socket_handler import SocketHandler
-from .websocket_listener import WebsocketListener, WebsocketListenerList
+from .listener_base import ListenerList
 
 logger = logging.getLogger(__name__)
 
@@ -19,9 +18,9 @@ def md5(data: str) -> str:
     m.update(data.encode())
     return m.hexdigest()
 
-class SocketWatcher(object):
+class SocketWatcher():
 
-    def __init__(self, pattern: str, listeners: WebsocketListenerList):
+    def __init__(self, pattern: str, listeners: ListenerList):
         super().__init__()
         self._sockets: Dict[str, SocketHandler] = {}
         self._pattern = re.compile(pattern)

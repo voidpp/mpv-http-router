@@ -3,7 +3,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class Message(object):
+class Message():
 
     def __init__(self, id: str, data, error: str = ''):
         self._id = id

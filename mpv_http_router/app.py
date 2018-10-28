@@ -2,18 +2,19 @@
 import json
 import logging
 import logging.config
-from flask import Flask, request, abort, Response
-from flask_cors import cross_origin, CORS
-from werkzeug.serving import is_running_from_reloader
+
+from flask import Flask, Response, abort, request, jsonify
+from flask_cors import CORS, cross_origin
 from flask_sockets import Sockets
 from geventwebsocket.websocket import WebSocket
-from collections import defaultdict
+from werkzeug.serving import is_running_from_reloader
 
 from .config import load
-from .mpv.socket_watcher import SocketWatcher
-from .mpv.websocket_listener import WebsocketListenerList, WebsocketListener
 from .exc import SocketSendError
 from .message import Message
+from .mpv.socket_watcher import SocketWatcher
+from .websocket_listener import WebsocketListener, WebsocketListenerList
+from .property_observer_manager import PropertyObserverManager
 
 config = load()
 
@@ -35,41 +36,28 @@ listeners = [] # type: WebsocketListenerList
 sockets = Sockets(app)
 
 socket_watcher = SocketWatcher(config.mpv_socket_pattern, listeners)
-observed_props = defaultdict(list)
 
-def make_response(data):
-    resp = Response(json.dumps(data) + '\n')
-    return resp
+property_observer_manager = PropertyObserverManager(socket_watcher)
+
+listeners.append(property_observer_manager)
 
 @app.route('/list', methods = ['GET'])
 def list_():
-    return make_response(socket_watcher.id_list)
+    return jsonify(socket_watcher.id_list)
 
 @app.route('/send/<id>', methods = ['POST'])
 def send(id):
     if id not in socket_watcher:
         abort(404)
     data = request.get_json()
-    return make_response(socket_watcher.send(Message(id, data), wait_for_response = True))
+    return jsonify(socket_watcher.send(Message(id, data), wait_for_response = True))
 
 @app.route('/observe_properties/<id>', methods = ['POST'])
 def observe_properties(id):
     if id not in socket_watcher:
         abort(404)
-    props = request.get_json()
-    new_props = []
-    for prop in props:
-        if prop not in observed_props[id]:
-            new_props.append(prop)
 
-    if new_props:
-        logger.info("Observe properties at %s: %s", id, new_props)
-        observed_props[id] += new_props
-        for prop in new_props:
-            oidx = observed_props[id].index(prop)
-            socket_watcher.send(Message(id, {"command": ["observe_property", oidx, prop]}))
-
-    return make_response(new_props)
+    return jsonify(property_observer_manager.observe(id, request.get_json()))
 
 @app.route('/batch/<id>', methods = ['POST'])
 def batch(id):
@@ -78,11 +66,11 @@ def batch(id):
     res = []
     data = request.get_json()
     if data is None:
-        return make_response({})
+        return jsonify({})
 
     for msg in data:
         res.append(socket_watcher.send(Message(id, msg), wait_for_response = True))
-    return make_response(res)
+    return jsonify(res)
 
 @sockets.route('/listen')
 def listen(ws: WebSocket):

@@ -5,7 +5,7 @@ from configpp.soil import create_from_url
 tree = Tree(Settings(convert_underscores_to_hypens = True))
 
 @tree.root()
-class Config(object):
+class Config():
 
     port: int
     host = '0.0.0.0'

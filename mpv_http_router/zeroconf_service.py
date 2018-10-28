@@ -4,7 +4,7 @@ from zeroconf import ServiceInfo, Zeroconf
 
 logger = logging.getLogger(__name__)
 
-class ZeroconfService(object):
+class ZeroconfService():
 
     def register(self, port: int):
 

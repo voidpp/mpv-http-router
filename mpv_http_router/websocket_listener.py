@@ -1,12 +1,14 @@
-from typing import List
 import logging
+from typing import List
+
 from geventwebsocket.websocket import WebSocket
 
-from mpv_http_router.message import Message
+from .message import Message
+from .mpv.listener_base import ListenerBase
 
 logger = logging.getLogger(__name__)
 
-class WebsocketListener(object):
+class WebsocketListener(ListenerBase):
 
     def __init__(self, websocket: WebSocket):
         self._websocket = websocket

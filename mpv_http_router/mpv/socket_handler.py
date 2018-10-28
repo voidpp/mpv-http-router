@@ -1,15 +1,15 @@
 import json
 import logging
-import socket
 import os
+import socket
+from enum import Enum
+from threading import Event, Thread
 from typing import Dict
-from threading import Thread, Event
 
 from mpv_http_router.exc import SocketSendError
 from mpv_http_router.message import Message
-from enum import Enum
 
-from .websocket_listener import WebsocketListenerList
+from .listener_base import ListenerList
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ class SocketHandler(Thread):
     """Represent an mpv instance
     """
 
-    def __init__(self, id: str, filename: str, listeners: WebsocketListenerList):
+    def __init__(self, id: str, filename: str, listeners: ListenerList):
         super().__init__()
         self._id = id
         self._filename = filename
