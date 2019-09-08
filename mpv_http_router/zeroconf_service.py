@@ -28,7 +28,7 @@ class ZeroconfService():
 
         self._registered = True
 
-        logger.info("MPV HTTP Router has been registered in the network on %s", port)
+        logger.info("MPV HTTP Router has been registered in the network on %s:%s", hostname, port)
 
 
     def unregister(self):
